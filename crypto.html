@@ -38,7 +38,7 @@ table.stack tr:first-child{display:none}
 table.stack tr{display:block;background:var(--surface);border:1px solid var(--line);margin:0 0 10px;padding:0}
 table.stack td{display:grid;grid-template-columns:minmax(86px,42%) 1fr;gap:8px;align-items:baseline;border:0;border-top:1px solid var(--line);padding:7px 10px;text-align:left;white-space:normal;overflow-wrap:anywhere}
 table.stack td::before{content:attr(data-label);color:var(--muted);font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;line-height:1.35}
-table.stack td>*{grid-column:2}
+table.stack td>div{grid-column:2}
 table.stack td.num{text-align:left}
 table.stack td.rh{display:block;background:var(--tile);border-top:0;font-size:14px;padding:8px 10px}
 table.stack td.rh::before{content:none}
@@ -242,6 +242,74 @@ function explainerHtml2(){return `
 `+explainerHtml3();}
 
 function explainerHtml3(){return `
+<h2>An aside on units, or why there is a whole Bitcoin price in the denominator</h2>
+<p>Someone reading that formula carefully will object, and the objection is a good one. The top of the fraction is a <i>distance</i>: how many dollars we are above the strike, usually a handful. The bottom appears to contain the entire price of Bitcoin, about &#36;77,000. You cannot add those two things together. So why is it fine to multiply by them?</p>
+<p>The answer is that <b>&#963; is not an amount of money. It is a percentage.</b></p>
+<p>Look at how we measure it. We take the <i>logarithm</i> of the price before we measure anything, which means what we actually record is proportional moves, not dollar moves. To &#963;, a jump from &#36;76,700 to &#36;76,730 and a jump from &#36;10,000 to &#36;10,004 are the same size, because both are about four hundredths of one percent. There are no dollars anywhere inside &#963;. Its only unit is <b>per square root of a second</b>, and that comes from the square-root-of-time rule, not from money.</p>
+<p>So &#963;&#8730;&#964; is a bare fraction. A percentage of nothing is nothing, and <b>S is what turns that percentage into money.</b> It is a multiplier, not an addend. Once you multiply, the bottom of the fraction is in dollars, the top is in dollars, and they cancel.</p>
+<svg class="dg" viewBox="0 0 400 196" role="img" aria-label="The units cancel in the z formula, leaving a pure number">
+<text x="140" y="44" font-size="15" fill="var(--ink)" text-anchor="middle" font-style="italic">S + b &#8722; K</text>
+<text x="140" y="61" font-size="10.5" fill="var(--good)" text-anchor="middle">dollars</text>
+<line x1="52" y1="73" x2="228" y2="73" stroke="var(--ink)" stroke-width="1.6"/>
+<text x="140" y="97" font-size="15" fill="var(--ink)" text-anchor="middle" font-style="italic">&#963; &#183; S &#183; &#8730;&#964;</text>
+<text x="140" y="114" font-size="10.5" fill="var(--muted)" text-anchor="middle">1/&#8730;s &#183; dollars &#183; &#8730;s</text>
+<text x="140" y="130" font-size="10.5" fill="var(--good)" text-anchor="middle">= dollars</text>
+<path d="M240 84 L286 84" stroke="var(--ink)" stroke-width="1.5" marker-end="url(#exc)"/>
+<text x="344" y="80" font-size="14" fill="var(--accent)" text-anchor="middle" font-weight="700">z</text>
+<text x="344" y="96" font-size="10" fill="var(--muted)" text-anchor="middle">a pure number</text>
+<text x="200" y="162" font-size="11" fill="var(--ink)" text-anchor="middle">the square roots of seconds cancel, then the dollars cancel</text>
+<text x="200" y="178" font-size="10.5" fill="var(--muted)" text-anchor="middle">what survives is "how many typical moves from the strike are we?"</text>
+<defs><marker id="exc" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 1 L6 3.5 L0 6" fill="var(--ink)"/></marker></defs>
+</svg>
+<p class="cap">Both halves are in dollars, so the ratio is a bare number, which is exactly what a bell curve will accept.</p>
+<p>Here is a real row the bot recorded, with about four minutes left in a window:</p>
+<div class="eq"><div class="fml">&#963; &#8730;&#964; = 1.4&#215;10<sup>&#8722;5</sup> &#215; &#8730;195 = 0.000195</div>
+<div class="fml">&#215; S = 0.000195 &#215; &#36;76,732 = &#36;14.99</div>
+<ul class="legend">
+<li>the fraction says Bitcoin could plausibly drift about <b>0.0195%</b> in the time remaining</li>
+<li>multiplied by the price, that is about <b>&#36;15</b>, and the bot recorded &#36;15.44 once the calibration and the basis error were folded in</li>
+<li>we were &#36;0.78 below the strike, so z = &#8722;0.78 / 15.44 = &#8722;0.05, and the model priced it at 49.5&#162;</li>
+</ul></div>
+<p>Now try the other version. Add instead of multiply, and the denominator becomes &#36;76,732 + 0.000195, which is &#36;76,732. The volatility has simply vanished into rounding. Every z collapses to about one hundred-thousandth, and every market on every day prices at <b>49.9996&#162;</b>, forever, no matter how far from the strike we sit or how little time is left. The model would have no opinion about anything.</p>
+<p class="aside"><b>The instinct was right, the target was wrong.</b> Never add a price to a price-change: that really would be a bug, and it is the kind that hides for months. Here S is not a price being added to a distance, it is the exchange rate between percentages and dollars. The same thing is going on, quietly, every time someone says "a 2% move" and you reach for a calculator.</p>
+<p>One more check that the units are honest: the real denominator also carries the <b>basis error</b>, the leftover disagreement between our index and Kalshi's, and it is added in quadrature. That is only a legal thing to do because it is measured in dollars too. If &#963;&#8730;&#964; had been left as a bare fraction, there would have been nothing to add it to.</p>
+
+<h3>Every symbol on this page, and what it is measured in</h3>
+<p>Every equation here passes the same test: both sides of the equals sign carry the same units. A formula that fails that test is wrong no matter how convincing its output looks.</p>
+<div class="wrap"><table class="stack"><tr><th>symbol</th><th>units</th><th>what it is</th></tr>
+<tr><td class="rh">S</td><td data-label="units">dollars</td><td data-label="what it is">Bitcoin's price now, from the five-exchange composite</td></tr>
+<tr><td class="rh">K</td><td data-label="units">dollars</td><td data-label="what it is">the strike this window settles against</td></tr>
+<tr><td class="rh">b</td><td data-label="units">dollars</td><td data-label="what it is">the basis: Kalshi's index minus our composite</td></tr>
+<tr><td class="rh">&#964;</td><td data-label="units">seconds</td><td data-label="what it is">time left in the window</td></tr>
+<tr><td class="rh">&#963;</td><td data-label="units">per &#8730;second</td><td data-label="what it is">a typical <i>proportional</i> move per square root of a second. Measured on log prices, so it contains no dollars</td></tr>
+<tr><td class="rh">&#963;&#8730;&#964;</td><td data-label="units">none</td><td data-label="what it is">a bare fraction: how far it could drift, as a percentage</td></tr>
+<tr><td class="rh">&#963;&#183;S&#183;&#8730;&#964;</td><td data-label="units">dollars</td><td data-label="what it is">that same drift, expressed in money</td></tr>
+<tr><td class="rh">basis error</td><td data-label="units">dollars</td><td data-label="what it is">irreducible noise between the two indices, added in quadrature</td></tr>
+<tr><td class="rh">k(&#964;)</td><td data-label="units">none</td><td data-label="what it is">a calibration dial, fitted per time band</td></tr>
+<tr><td class="rh">z</td><td data-label="units">none</td><td data-label="what it is">dollars divided by dollars: moves away from the strike</td></tr>
+<tr><td class="rh">&#934;</td><td data-label="units">none in, none out</td><td data-label="what it is">the bell-curve lookup: a bare number goes in, a probability comes out</td></tr>
+<tr><td class="rh">p</td><td data-label="units">none, between 0 and 1</td><td data-label="what it is">a probability, which is also dollars per contract. That coincidence is the whole business</td></tr>
+</table></div>
+
+<h3>The fee and the per-contract numbers</h3>
+<div class="wrap"><table class="stack"><tr><th>symbol</th><th>units</th><th>what it is</th></tr>
+<tr><td class="rh">fee</td><td data-label="units">dollars per contract</td><td data-label="what it is">0.07&#183;p&#183;(1&#8722;p). p carries no units, so the fee lands in the same money as the &#36;1 payout</td></tr>
+<tr><td class="rh">markout</td><td data-label="units">cents per contract</td><td data-label="what it is">where the price went after a fill, measured from our side</td></tr>
+<tr><td class="rh">&#162; per contract</td><td data-label="units">cents per contract</td><td data-label="what it is">average profit per contract once its window settled, after fees</td></tr>
+</table></div>
+
+<h3>The statistics and the sizing rule</h3>
+<div class="wrap"><table class="stack"><tr><th>symbol</th><th>units</th><th>what it is</th></tr>
+<tr><td class="rh">&#956;</td><td data-label="units">dollars per window</td><td data-label="what it is">average result per settled window</td></tr>
+<tr><td class="rh">s</td><td data-label="units">dollars per window</td><td data-label="what it is">the typical swing between windows</td></tr>
+<tr><td class="rh">n</td><td data-label="units">a count</td><td data-label="what it is">settled windows so far</td></tr>
+<tr><td class="rh">SE</td><td data-label="units">dollars per window</td><td data-label="what it is">s &#247; &#8730;n: how unreliable that average still is</td></tr>
+<tr><td class="rh">t</td><td data-label="units">none</td><td data-label="what it is">dollars per window over dollars per window. That is why a t of 2 means the same thing here as anywhere else</td></tr>
+<tr><td class="rh">&#963;<sup>2</sup></td><td data-label="units">dollars squared</td><td data-label="what it is">the variance of the per-window result. <b>Not the same &#963; as above</b> &#8212; see the warning below</td></tr>
+<tr><td class="rh">B</td><td data-label="units">dollars</td><td data-label="what it is">the money actually at risk</td></tr>
+<tr><td class="rh">f<sup>*</sup></td><td data-label="units">none</td><td data-label="what it is">(dollars &#215; dollars) &#247; dollars squared. A multiple of our current size, not an amount</td></tr>
+</table></div>
+<p class="aside"><b>A warning about one letter.</b> &#963; appears in two different formulas on this page meaning two different things, which is a genuine trap and not our invention &#8212; it is how both fields write it. In the probability formula &#963; is a <i>proportional price move per square root of a second</i>, with no dollars in it. In the Kelly formula &#963;<sup>2</sup> is the <i>variance of our per-window profit</i>, measured in dollars squared. They are unrelated quantities that happen to share a symbol. If you ever find yourself substituting one into the other, the units will stop you, which is the entire reason to check them.</p>
 <h2>Part 4 · When we actually trade</h2>
 <p>Now we have our number and the market has its number. The obvious move is to quote both sides all the time and collect the spread. We used to do exactly that. It is worse than it sounds.</p>
 <p>If we post a buy and a sell around a price we secretly believe is wrong, then one of those two orders is a gift to whoever takes it. We get filled on the bad side precisely when we are wrong, which is the worst possible time.</p>
